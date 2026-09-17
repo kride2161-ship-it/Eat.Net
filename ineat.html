@@ -1,1 +1,630 @@
+Srati a hotel na school
+<!DOCTYPE html>
+<html lang="ru" data-theme="light" data-font="large" data-view="cards">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Еды.Net — Рецепты</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Переменные тем и настроек */
+    :root {
+      --font-size-base: 18px;
+      
+      /* Светлая тема (По умолчанию) */
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-sidebar: rgba(255, 255, 255, 0.95);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      
+      --brand-black: #090a0f;
+      --brand-violet: #6d28d9;
+      --brand-orange: #f97316;
+    }
 
+    /* Тёмная тема */
+    [data-theme="dark"] {
+      --bg-main: #090a0f;
+      --bg-card: #12151e;
+      --bg-sidebar: rgba(18, 21, 30, 0.95);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
+      --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Стеклянная тема */
+    [data-theme="glass"] {
+      --bg-main: linear-gradient(135deg, #090a0f 0%, #170b29 50%, #1c0e18 100%);
+      --bg-card: rgba(255, 255, 255, 0.07);
+      --bg-sidebar: rgba(15, 23, 42, 0.85);
+      --text-main: #ffffff;
+      --text-muted: #cbd5e1;
+      --border-color: rgba(255, 255, 255, 0.15);
+      --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      backdrop-filter: blur(12px);
+    }
+
+    /* Размеры шрифтов */
+    [data-font="normal"] { --font-size-base: 15px; }
+    [data-font="large"] { --font-size-base: 18px; }
+    [data-font="xlarge"] { --font-size-base: 21px; }
+    [data-font="huge"] { --font-size-base: 24px; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: var(--font-size-base);
+      background: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Шапка */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-text {
+      font-weight: 900;
+      font-size: 1.8em;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-violet) 60%, var(--brand-black) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 2px 10px rgba(109, 40, 217, 0.15);
+    }
+
+    /* Кнопка бургера (3 палочки) */
+    .menu-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 44px;
+      height: 44px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .menu-btn:hover {
+      background: rgba(249, 115, 22, 0.1);
+      border-color: var(--brand-orange);
+    }
+
+    .menu-btn span {
+      display: block;
+      width: 22px;
+      height: 3px;
+      background-color: var(--text-main);
+      border-radius: 2px;
+    }
+
+    /* Боковое меню изменений */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -360px;
+      width: 340px;
+      height: 100%;
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(16px);
+      border-left: 1px solid var(--border-color);
+      z-index: 100;
+      padding: 2rem 1.5rem;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .sidebar.active {
+      right: 0;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+
+    .sidebar-title {
+      font-size: 1.2em;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .setting-label {
+      font-size: 0.9em;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .setting-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-option {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-main);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .btn-option.active {
+      border-color: var(--brand-orange);
+      background: linear-gradient(135deg, var(--brand-orange), var(--brand-violet));
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* Контейнер рецептов */
+    main {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Сетка карточек */
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    /* Вид просто текстом */
+    [data-view="text"] .recipes-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Карточка рецепта */
+    .recipe-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Динамическая цветовая полоса в зависимости от индекса */
+    .color-accent-bar {
+      height: 6px;
+      width: 100%;
+      background: linear-gradient(to right, var(--card-color-from), var(--card-color-to));
+    }
+
+    .card-header-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 600;
+      z-index: 2;
+    }
+
+    /* Фотография рецепта */
+    .recipe-image {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    /* В режим списка (текст) фото СКРЫВАЕТСЯ по условию */
+    [data-view="text"] .recipe-image {
+      display: none !important;
+    }
+
+    .recipe-content {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .recipe-title {
+      font-size: 1.3em;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .calories-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(249, 115, 22, 0.12);
+      color: var(--brand-orange);
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85em;
+      width: fit-content;
+    }
+
+    .section-subtitle {
+      font-size: 0.95em;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--brand-violet);
+    }
+
+    .ingredients-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .ingredient-item {
+      background: rgba(109, 40, 217, 0.08);
+      border: 1px solid rgba(109, 40, 217, 0.15);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.85em;
+    }
+
+    .recipe-steps {
+      padding-left: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 0.92em;
+    }
+
+    .color-ratio-indicator {
+      font-size: 0.75em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed var(--border-color);
+    }
+
+    /* Адаптивность */
+    @media (max-width: 600px) {
+      .sidebar {
+        width: 100%;
+        right: -100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Шапка сайта -->
+  <header>
+    <div class="logo-container">
+      <div class="logo-text">Еды.Net</div>
+    </div>
+    
+    <!-- Кнопка 3 палочки (Меню изменений) -->
+    <button class="menu-btn" id="openSidebar" title="Меню изменений">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+
+  <!-- Затемнение для сайдбара -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Боковое меню изменений -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title" id="menuTitle">Меню изменений</div>
+      <button class="close-btn" id="closeSidebar">&times;</button>
+    </div>
+
+    <!-- Режим отображения -->
+    <div class="setting-group">
+      <div class="setting-label" id="labelView">Вид отображения</div>
+      <div class="setting-options">
+        <button class="btn-option active" data-action="set-view" data-value="cards" id="optCards">🎴 Карточки</button>
+        <button class="btn-option" data-action="set-view" data-value="text" id="optText">📄 Текст</button>
+      </div>
+    </div>
+
+    <!-- Тема оформления -->
+    <div class="setting-group">
+      <div class="setting-label" id="labelTheme">Тема (По умолчанию — Белая)</div>
+      <div class="setting-options">
+        <button class="btn-option active" data-action="set-theme" data-value="light" id="optLight">☀️ Белая</button>
+        <button class="btn-option" data-action="set-theme" data-value="dark" id="optDark">🌙 Тёмная</button>
+        <button class="btn-option" data-action="set-theme" data-value="glass" id="optGlass">🔮 Стекло</button>
+      </div>
+    </div>
+
+    <!-- Размер шрифта -->
+    <div class="setting-group">
+      <div class="setting-label" id="labelFont">Размер шрифта</div>
+      <div class="setting-options">
+        <button class="btn-option" data-action="set-font" data-value="normal">Норм</button>
+        <button class="btn-option active" data-action="set-font" data-value="large">Крупный</button>
+        <button class="btn-option" data-action="set-font" data-value="xlarge">XL</button>
+        <button class="btn-option" data-action="set-font" data-value="huge">XXL</button>
+      </div>
+    </div>
+
+    <!-- Язык -->
+    <div class="setting-group">
+      <div class="setting-label" id="labelLang">Язык / Language</div>
+      <div class="setting-options">
+        <button class="btn-option active" data-action="set-lang" data-value="ru">🇷🇺 RU</button>
+        <button class="btn-option" data-action="set-lang" data-value="en">🇬🇧 EN</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Основной контент -->
+  <main>
+    <div class="recipes-grid" id="recipesContainer">
+      <!-- Рецепты генерируются динамически JS -->
+    </div>
+  </main>
+
+  <script>
+    // База данных рецептов
+    const recipesData = [
+      {
+        id: 1,
+        title: "Лапша из дешёвых предметов",
+        calories: "240 - 710 ккал",
+        image: "file_00000000f88481f495def80a6cd8bdb7.png",
+        ingredients: [
+          "Мясо (например стейк)",
+          "Соевый соус",
+          "Растительное масло",
+          "Петрушка",
+          "Лук",
+          "Морковь",
+          "Шампиньоны",
+          "Чеснок",
+          "Кипяток",
+          "Роллтон (3 пакетика)"
+        ],
+        marinateStep: "Разрежьте мясо на кусочки, налейте соевый соус и подождите несколько часов для маринования.",
+        steps: [
+          "Достаньте казан/сковородку, налейте растительное масло и подождите прожарки (разогрева).",
+          "Добавьте замаринованное мясо.",
+          "Разрежьте чеснок, добавьте в мясо и перемешайте.",
+          "Добавьте шампиньоны, перемешайте.",
+          "Добавьте морковь (нарезанную соломкой), перемешайте.",
+          "Добавьте нарезанный лук, перемешайте.",
+          "Добавьте петрушку.",
+          "Накройте крышкой на 5 минут.",
+          "Откройте крышку, полив соевым соусом, через 5 минут положите туда 3 пачки Роллтона и залейте кипятком.",
+          "Оставьте под крышкой на 5 минут, откройте, подлейте ещё немного воды и снова закройте.",
+          "Аккуратно вылейте лишнюю воду из казана/сковородки, наложите на тарелки и наслаждайтесь!"
+        ]
+      }
+    ];
+
+    // Вычисление динамического цвета (Чем меньше №, тем больше Фиолетового, чем больше № — тем больше Оранжевого)
+    function getDynamicColors(index, total) {
+      // index от 0 до total - 1
+      const ratio = total > 1 ? index / (total - 1) : 0; // 0 = 100% Фиолетовый, 1 = 100% Оранжевый
+      const violetPercent = Math.round((1 - ratio) * 100);
+      const orangePercent = Math.round(ratio * 100);
+
+      // Глубокий фиолетовый (#6d28d9) -> Ярко-оранжевый (#f97316)
+      const fromColor = `rgb(${Math.round(109 + (249 - 109) * ratio)}, ${Math.round(40 + (115 - 40) * ratio)}, ${Math.round(217 + (22 - 217) * ratio)})`;
+      const toColor = `rgb(${Math.round(147 + (249 - 147) * ratio)}, ${Math.round(51 + (115 - 51) * ratio)}, ${Math.round(234 + (22 - 234) * ratio)})`;
+
+      return { fromColor, toColor, violetPercent, orangePercent };
+    }
+
+    // Рендеринг рецептов
+    function renderRecipes() {
+      const container = document.getElementById('recipesContainer');
+      container.innerHTML = '';
+
+      const total = recipesData.length;
+
+      recipesData.forEach((recipe, i) => {
+        const colors = getDynamicColors(i, total);
+        
+        const card = document.createElement('article');
+        card.className = 'recipe-card';
+        card.style.setProperty('--card-color-from', colors.fromColor);
+        card.style.setProperty('--card-color-to', colors.toColor);
+
+        card.innerHTML = `
+          <div class="color-accent-bar"></div>
+          <div class="card-header-badge">№ ${i + 1}</div>
+          
+          <!-- Картинка показывается только в карточной режиме -->
+          <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image" onerror="this.style.background='#e2e8f0'; this.alt='Фото рецепта (серверное)';" />
+          
+          <div class="recipe-content">
+            <h2 class="recipe-title">${recipe.title}</h2>
+            <div class="calories-tag">🔥 ${recipe.calories}</div>
+            
+            <div>
+              <div class="section-subtitle">📦 Ингредиенты:</div>
+              <ul class="ingredients-list">
+                ${recipe.ingredients.map(ing => `<li class="ingredient-item">${ing}</li>`).join('')}
+              </ul>
+            </div>
+
+            <div>
+              <div class="section-subtitle">🥩 Маринование:</div>
+              <p style="font-size: 0.9em; opacity: 0.9;">${recipe.marinateStep}</p>
+            </div>
+
+            <div>
+              <div class="section-subtitle">🍳 Приготовление:</div>
+              <ol class="recipe-steps">
+                ${recipe.steps.map(step => `<li>${step}</li>`).join('')}
+              </ol>
+            </div>
+
+            <div class="color-ratio-indicator">
+              <span>🟣 Фиолетовый: ${colors.violetPercent}%</span>
+              <span>🟠 Оранжевый: ${colors.orangePercent}%</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Логика управления боковым меню и настройками
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    document.getElementById('openSidebar').addEventListener('click', () => {
+      sidebar.classList.add('active');
+      overlay.classList.add('active');
+    });
+
+    function closeMenu() {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+
+    document.getElementById('closeSidebar').addEventListener('click', closeMenu);
+    overlay.addEventListener('click', closeMenu);
+
+    // Обработка переключателей в меню
+    document.querySelectorAll('.btn-option').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const action = btn.getAttribute('data-action');
+        const value = btn.getAttribute('data-value');
+
+        // Переключение активного состояния в группе
+        btn.parentElement.querySelectorAll('.btn-option').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (action === 'set-view') {
+          document.documentElement.setAttribute('data-view', value);
+        } else if (action === 'set-theme') {
+          document.documentElement.setAttribute('data-theme', value);
+        } else if (action === 'set-font') {
+          document.documentElement.setAttribute('data-font', value);
+        } else if (action === 'set-lang') {
+          updateLanguage(value);
+        }
+      });
+    });
+
+    // Простая двухъязычность
+    function updateLanguage(lang) {
+      if (lang === 'en') {
+        document.getElementById('menuTitle').innerText = "Settings Menu";
+        document.getElementById('labelView').innerText = "Display View";
+        document.getElementById('labelTheme').innerText = "Theme (Default — Light)";
+        document.getElementById('labelFont').innerText = "Font Size";
+        document.getElementById('optCards').innerText = "🎴 Cards";
+        document.getElementById('optText').innerText = "📄 Text";
+        document.getElementById('optLight').innerText = "☀️ Light";
+        document.getElementById('optDark').innerText = "🌙 Dark";
+        document.getElementById('optGlass').innerText = "🔮 Glass";
+      } else {
+        document.getElementById('menuTitle').innerText = "Меню изменений";
+        document.getElementById('labelView').innerText = "Вид отображения";
+        document.getElementById('labelTheme').innerText = "Тема (По умолчанию — Белая)";
+        document.getElementById('labelFont').innerText = "Размер шрифта";
+        document.getElementById('optCards').innerText = "🎴 Карточки";
+        document.getElementById('optText').innerText = "📄 Текст";
+        document.getElementById('optLight').innerText = "☀️ Белая";
+        document.getElementById('optDark').innerText = "🌙 Тёмная";
+        document.getElementById('optGlass').innerText = "🔮 Стекло";
+      }
+    }
+
+    // Инициализация при загрузке
+    renderRecipes();
+  </script>
+</body>
+      </html>
